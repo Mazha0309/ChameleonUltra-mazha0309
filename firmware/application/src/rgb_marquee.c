@@ -258,6 +258,8 @@ static void rgb_marquee_slot_switch_pwm_callback(nrfx_pwm_evt_type_t event_type)
     }
 }
 void rgb_marquee_slot_switch(uint8_t led_down, uint8_t color_led_down, uint8_t led_up, uint8_t color_led_up) {
+    led_down %= 8;   // 16 slots map onto 8 LEDs
+    led_up %= 8;
     int16_t light_level = 99; //ledBrightnessValue
     uint32_t *led_pins = hw_get_led_array();
     if (led_down >= 0 && led_down <= 7) {

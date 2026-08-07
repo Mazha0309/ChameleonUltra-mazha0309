@@ -79,8 +79,9 @@ void light_up_by_slot(void) {
     uint32_t *led_pins = hw_get_led_array();
     // The current lighting logic has not changed very much, so we only need to light up the specified lamp for the time being.
     uint8_t slot = tag_emulation_get_slot();
+    uint8_t led_index = slot % 8;   // 16 slots map onto 8 LEDs
     for (int i = 0; i < RGB_LIST_NUM; i++) {
-        if (i == slot) {
+        if (i == led_index) {
             nrf_gpio_pin_set(led_pins[i]);
         } else {
             nrf_gpio_pin_clear(led_pins[i]);
