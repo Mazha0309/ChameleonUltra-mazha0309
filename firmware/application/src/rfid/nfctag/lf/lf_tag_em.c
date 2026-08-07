@@ -39,7 +39,14 @@ static tag_specific_type_t m_tag_type = TAG_TYPE_UNDEFINED;
 const nrfx_pwm_t m_broadcast = NRFX_PWM_INSTANCE(0);
 const nrf_pwm_sequence_t *m_pwm_seq = NULL;
 
+// True while the LF emulation detects a real reader field (set in the
+// EVT_STOPPED check with antenna off + drain, cleared on field lost).
+// This is the reliable "reader present" signal for polling: sampling LPCOMP
+// directly from polling would false-positive on the device's own broadcast.
+static volatile bool m_lf_reader_present = false;
+
 static void lf_field_lost(void) {
+    m_lf_reader_present = false;
     // Open the incident interruption, so that the next event can be in and out normally
     g_is_tag_emulating = false;  // Reset the flag in the emulation
     m_is_lf_emulating = false;
@@ -121,11 +128,16 @@ static void pwm_handler(nrfx_pwm_evt_type_t event_type) {
     bsp_delay_ms(2);  // let peak detector drain: ~2 ms time constant on LF_RSSI
     if (is_lf_field_exists()) {
         // Field still present — play another finite burst then check again.
+        m_lf_reader_present = true;
         nrfx_pwm_simple_playback(&m_broadcast, m_pwm_seq, 10, NRFX_PWM_FLAG_STOP);
     } else {
         // Field gone — clean up.
         lf_field_lost();
     }
+}
+
+bool lf_reader_field_present(void) {
+    return m_lf_reader_present;
 }
 
 static void pwm_init(void) {

@@ -54,7 +54,10 @@ void polling_note_reader_activity(void) {
 }
 
 static bool polling_reader_present(void) {
-    if (is_lf_field_exists()) return true;
+    // LF: use the emulation's own reader-presence state (sampled with the
+    // antenna off + drain) instead of sampling LPCOMP here — the device's own
+    // LF broadcast would otherwise read as a "present" field (disco mode).
+    if (lf_reader_field_present()) return true;
     uint32_t diff = app_timer_cnt_diff_compute(app_timer_cnt_get(), m_last_reader_activity);
     return diff < APP_TIMER_TICKS(POLLING_HF_ACTIVITY_WINDOW_MS);
 }
