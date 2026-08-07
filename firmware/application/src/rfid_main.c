@@ -121,10 +121,11 @@ void light_up_by_slot(void) {
  */
 void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
     // Use display colors (mixed for the high half) so the animation itself
-    // already shows the right color for slots 9-16.
-    uint8_t color_now = get_slot_display_color(slot_now);
+    // already shows the right color for slots 9-16. The fade-down phase also
+    // uses the target color: switching between differently-colored slots must
+    // not flash the old slot's color.
     uint8_t color_new = get_slot_display_color(slot_new);
-    rgb_marquee_slot_switch(slot_now, color_now, slot_new, color_new);
+    rgb_marquee_slot_switch(slot_now, color_new, slot_new, color_new);
     // All slot-change paths (button, protocol command, polling) go through
     // here, so apply the high-half mixed color from this common point.
     set_slot_led_color_by_slot(slot_new);

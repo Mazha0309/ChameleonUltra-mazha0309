@@ -28,6 +28,9 @@ void polling_init(void) {
 void polling_start(void) {
     if (!settings_get_polling_enable()) return;
     m_polling_pending = false;
+    // Stop-then-start so an interval change always takes effect immediately,
+    // regardless of the previous timer state.
+    app_timer_stop(m_polling_timer);
     ret_code_t err_code = app_timer_start(m_polling_timer,
                                           APP_TIMER_TICKS(settings_get_polling_interval_ms()), NULL);
     APP_ERROR_CHECK(err_code);
