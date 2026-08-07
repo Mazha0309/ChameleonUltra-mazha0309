@@ -265,6 +265,20 @@ static data_frame_tx_t *cmd_processor_set_polling_interval(uint16_t cmd, uint16_
     return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
 }
 
+static data_frame_tx_t *cmd_processor_get_ab_reboot_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    uint8_t payload = settings_get_ab_reboot_enable() ? 1 : 0;
+    return data_frame_make(cmd, STATUS_SUCCESS, sizeof(payload), &payload);
+}
+
+static data_frame_tx_t *cmd_processor_set_ab_reboot_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    if (length != 1 || data[0] > 1) {
+        return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
+    }
+    settings_set_ab_reboot_enable(data[0] == 1);
+    settings_save_config();
+    return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
+}
+
 static data_frame_tx_t *cmd_processor_get_ble_pairing_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
     uint8_t is_enable = settings_get_ble_pairing_enable();
     return data_frame_make(cmd, STATUS_SUCCESS, 1, &is_enable);
@@ -3141,6 +3155,8 @@ static cmd_data_map_t m_data_cmd_map[] = {
     {    DATA_CMD_SET_POLLING_ENABLE,           NULL,                        cmd_processor_set_polling_enable,            NULL                   },
     {    DATA_CMD_GET_POLLING_INTERVAL,         NULL,                        cmd_processor_get_polling_interval,          NULL                   },
     {    DATA_CMD_SET_POLLING_INTERVAL,         NULL,                        cmd_processor_set_polling_interval,          NULL                   },
+    {    DATA_CMD_GET_AB_REBOOT_ENABLE,         NULL,                        cmd_processor_get_ab_reboot_enable,          NULL                   },
+    {    DATA_CMD_SET_AB_REBOOT_ENABLE,         NULL,                        cmd_processor_set_ab_reboot_enable,          NULL                   },
     {    DATA_CMD_GET_ALL_SLOT_NICKS,           NULL,                        cmd_processor_get_all_slot_nicks,            NULL                   },
 
 #if defined(PROJECT_CHAMELEON_ULTRA)

@@ -46,7 +46,8 @@ typedef struct ALIGN_U32 {
     uint8_t animation_config : 2;
     uint8_t ble_pairing_enable : 1;
     uint8_t polling_enable : 1;   // NEW in v7: auto slot polling switch
-    uint8_t reserved0 : 4;
+    uint8_t ab_reboot_enable : 1; // NEW in v8: A+B long-press soft reboot
+    uint8_t reserved0 : 3;
 
     // 1 byte
     uint8_t button_a_press : 4;
@@ -96,4 +97,6 @@ bool settings_get_polling_enable(void);
 void settings_set_polling_enable(bool enable);
 uint16_t settings_get_polling_interval_ms(void);
 void settings_set_polling_interval_ms(uint16_t ms);
+bool settings_get_ab_reboot_enable(void);
+void settings_set_ab_reboot_enable(bool enable);
 #endif

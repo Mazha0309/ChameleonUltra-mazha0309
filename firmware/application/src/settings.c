@@ -66,6 +66,11 @@ void settings_init_sleep_timeout_config(void) {
 static void settings_init_polling_config(void) {
     config.polling_enable = false;
     config.polling_interval_ms = POLLING_INTERVAL_DEFAULT_MS;
+    settings_init_ab_reboot_config();
+}
+
+static void settings_init_ab_reboot_config(void) {
+    config.ab_reboot_enable = true;
 }
 
 void settings_init_config(void) {
@@ -102,6 +107,8 @@ void settings_migrate(void) {
 
         case 6:
             settings_init_polling_config();
+        case 7:
+            settings_init_ab_reboot_config();
 
             /*
              * Add new migration steps ABOVE THIS COMMENT
@@ -337,4 +344,12 @@ uint16_t settings_get_polling_interval_ms(void) {
 
 void settings_set_polling_interval_ms(uint16_t ms) {
     config.polling_interval_ms = ms;
+}
+
+bool settings_get_ab_reboot_enable(void) {
+    return config.ab_reboot_enable;
+}
+
+void settings_set_ab_reboot_enable(bool enable) {
+    config.ab_reboot_enable = enable;
 }

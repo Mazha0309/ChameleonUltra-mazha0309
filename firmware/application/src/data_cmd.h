@@ -52,6 +52,8 @@
 #define DATA_CMD_SET_POLLING_ENABLE              (1042)
 #define DATA_CMD_GET_POLLING_INTERVAL            (1043)
 #define DATA_CMD_SET_POLLING_INTERVAL            (1044)
+#define DATA_CMD_GET_AB_REBOOT_ENABLE            (1045)
+#define DATA_CMD_SET_AB_REBOOT_ENABLE            (1046)
 
 //
 // ******************************************************************
