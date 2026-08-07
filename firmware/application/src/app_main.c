@@ -472,9 +472,11 @@ static void check_wakeup_src(void) {
 
     if (m_reset_source & NRF_POWER_RESETREAS_OFF_MASK) {
         NRF_LOG_INFO("WakeUp from button");
-        advertising_start(false); // Turn on Bluetooth radio
 
         // Button wake-up boot animation
+        // Note: BLE advertising is started after the animation on purpose: the
+        // blocking PWM busy-wait loops of the marquee animation stall visibly
+        // when the SoftDevice radio preempts interrupts mid-animation.
         uint8_t animation_config = settings_get_animation_config();
         if (animation_config == SettingsAnimationModeFull) {
             rgb_marquee_sweep_to(color, !dir, 11);
@@ -491,6 +493,7 @@ static void check_wakeup_src(void) {
         // The indicator of the current card slot lights up at the end of the animation
         light_up_by_slot();
         polling_start();
+        advertising_start(false); // Turn on Bluetooth radio
 
         // If no operation follows, wait for the timeout and then deep hibernate
         sleep_timer_start(SLEEP_DELAY_MS_BUTTON_WAKEUP);
@@ -919,6 +922,18 @@ static void run_button_function_by_settings(settings_button_function_t sbf) {
 
         case SettingsButtonShowBattery:
             show_battery();
+            break;
+
+        case SettingsButtonTogglePolling:
+            settings_set_polling_enable(!settings_get_polling_enable());
+            settings_save_config();
+            if (settings_get_polling_enable()) {
+                NRF_LOG_INFO("Polling enabled by button press");
+                polling_start();
+            } else {
+                NRF_LOG_INFO("Polling disabled by button press");
+                polling_stop();
+            }
             break;
 
         default:

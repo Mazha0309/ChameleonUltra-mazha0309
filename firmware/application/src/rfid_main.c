@@ -2,6 +2,7 @@
 #include "rfid_main.h"
 #include "rgb_marquee.h"
 #include "slot_led.h"
+#include "hw_connect.h"
 
 //The current mode of the device
 device_mode_t rfid_state = DEVICE_MODE_NONE;
@@ -74,6 +75,27 @@ void tag_mode_enter(void) {
 }
 
 /**
+ * @brief Set the LED color for a slot. Slots 9-16 use mixed colors so the
+ *        high half is distinguishable without blinking.
+ */
+static void set_slot_led_color_by_slot(uint8_t slot) {
+    uint8_t base = get_color_by_slot(slot);
+    if (slot >= 8) {
+        switch (base) {
+            case 0: set_slot_light_color(RGB_YELLOW); break;   // dual -> yellow
+            case 1: set_slot_light_color(RGB_CYAN); break;     // IC    -> cyan
+            default: set_slot_light_color(RGB_MAGENTA); break; // ID    -> magenta
+        }
+    } else {
+        switch (base) {
+            case 0: set_slot_light_color(RGB_RED); break;      // dual -> red
+            case 1: set_slot_light_color(RGB_GREEN); break;    // IC   -> green
+            default: set_slot_light_color(RGB_BLUE); break;    // ID   -> blue
+        }
+    }
+}
+
+/**
  * @brief Function for light up led by slot index
  */
 void light_up_by_slot(void) {
@@ -88,29 +110,19 @@ void light_up_by_slot(void) {
             nrf_gpio_pin_clear(led_pins[i]);
         }
     }
-    if (slot >= 8) {
-        slot_led_blink_start(slot);
-    } else {
-        slot_led_blink_stop();
-    }
+    set_slot_led_color_by_slot(slot);
 }
 
 /**
  * @brief Apply visual and state changes after switching slot
  */
 void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
-    // Stop any running high-half blink first: it would fight the animation.
-    slot_led_blink_stop();
     uint8_t color_now = get_color_by_slot(slot_now);
     uint8_t color_new = get_color_by_slot(slot_new);
     rgb_marquee_slot_switch(slot_now, color_now, slot_new, color_new);
     // All slot-change paths (button, protocol command, polling) go through
-    // here, so drive the high-half blink from this common point.
-    if (slot_new >= 8) {
-        slot_led_blink_start(slot_new);
-    } else {
-        slot_led_blink_stop();
-    }
+    // here, so apply the high-half mixed color from this common point.
+    set_slot_led_color_by_slot(slot_new);
 }
 
 /**
