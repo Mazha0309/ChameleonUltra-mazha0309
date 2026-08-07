@@ -1,0 +1,8 @@
+[project]
+name = "cu-ble-sim"
+version = "0.1.0"
+description = "Chameleon Ultra BLE firmware capture simulator"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

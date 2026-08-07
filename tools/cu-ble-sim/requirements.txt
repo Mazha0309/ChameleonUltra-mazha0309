@@ -1,0 +1,3 @@
+bluez-peripheral>=0.1.7
+bleak>=0.22.0
+pytest>=8.0
