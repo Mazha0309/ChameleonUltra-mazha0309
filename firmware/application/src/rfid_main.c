@@ -71,6 +71,10 @@ void tag_mode_enter(void) {
 
         // to run tag emulation
         tag_emulation_sense_run();
+
+        // Restore the slot LED display (position + high-half mixed color).
+        // Operations like offline copy leave their own LED colors behind.
+        light_up_by_slot();
     }
 }
 
