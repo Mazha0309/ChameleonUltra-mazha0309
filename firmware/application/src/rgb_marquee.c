@@ -172,7 +172,12 @@ void rgb_marquee_usb_open_symmetric(uint8_t color) {
 //dir 0-from 1 card slot to 8 card slot, 1-from 8 card slot to 1 card slot (Direction, the end point is determined by the END parameter)
 //end To scan the number of lamps, decide the final animation area with the direction
 void rgb_marquee_sweep_to(uint8_t color, uint8_t dir, uint8_t end) {
-    end %= 8;   // 16 slots map onto 8 LEDs
+    // `end` is a virtual position on a 12-position strip: 0-7 are real LEDs,
+    // 8-11 are the "past the edge" markers (11 = sweep fully off the strip).
+    // High-half slot numbers (>11) map onto their 8-LED position.
+    if (end > 11) {
+        end %= 8;
+    }
     uint8_t startled = 0;
     uint8_t setled = 0;
     uint8_t leds2turnon = 0;
