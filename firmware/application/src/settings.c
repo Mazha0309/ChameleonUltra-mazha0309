@@ -58,6 +58,16 @@ void settings_init_sleep_timeout_config(void) {
     config.sleep_timeout = SETTINGS_SLEEP_TIMEOUT_DEFAULT_S;
 }
 
+#define POLLING_INTERVAL_DEFAULT_MS 500
+#define POLLING_INTERVAL_MIN_MS 100
+#define POLLING_INTERVAL_MAX_MS 5000
+
+// add on version7
+static void settings_init_polling_config(void) {
+    config.polling_enable = false;
+    config.polling_interval_ms = POLLING_INTERVAL_DEFAULT_MS;
+}
+
 void settings_init_config(void) {
     settings_update_version_for_config();
     config.animation_config = SettingsAnimationModeFull; // add on version1
@@ -66,6 +76,7 @@ void settings_init_config(void) {
     settings_init_ble_connect_key_config();
     settings_init_ble_pairing_enable_config();
     settings_init_sleep_timeout_config();
+    settings_init_polling_config();
 }
 
 void settings_migrate(void) {
@@ -88,6 +99,9 @@ void settings_migrate(void) {
 
         case 5:
             settings_init_sleep_timeout_config();
+
+        case 6:
+            settings_init_polling_config();
 
             /*
              * Add new migration steps ABOVE THIS COMMENT
@@ -307,4 +321,20 @@ uint32_t settings_get_sleep_timeout(void) {
 
 void settings_set_sleep_timeout(uint8_t seconds) {
     config.sleep_timeout = seconds;
+}
+
+bool settings_get_polling_enable(void) {
+    return config.polling_enable;
+}
+
+void settings_set_polling_enable(bool enable) {
+    config.polling_enable = enable;
+}
+
+uint16_t settings_get_polling_interval_ms(void) {
+    return config.polling_interval_ms;
+}
+
+void settings_set_polling_interval_ms(uint16_t ms) {
+    config.polling_interval_ms = ms;
 }
