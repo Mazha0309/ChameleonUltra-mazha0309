@@ -1,0 +1,23 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build firmware (Docker)
+        run: |
+          docker run --rm -v "$PWD:/workdir:rw" -e CURRENT_DEVICE_TYPE=ultra \
+            ghcr.io/rfidresearchgroup/chameleonultra-fw-builder:main bash ./firmware/build.sh
+      - name: Verify artifacts
+        run: |
+          ls -la firmware/objects/ultra-dfu-app.zip
+          unzip -l firmware/objects/ultra-dfu-app.zip
+      - name: Upload DFU package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: firmware/objects/ultra-dfu-app.zip
