@@ -35,6 +35,8 @@ typedef enum {
     SettingsButtonNfcFieldGenerator = 5U,
     // Toggle auto slot polling on/off
     SettingsButtonTogglePolling = 6U,
+    // Restart into the bootloader (DFU mode)
+    SettingsButtonEnterDfuMode = 7U,
 } settings_button_function_t;
 
 typedef struct ALIGN_U32 {

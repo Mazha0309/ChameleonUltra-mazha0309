@@ -75,24 +75,27 @@ void tag_mode_enter(void) {
 }
 
 /**
- * @brief Set the LED color for a slot. Slots 9-16 use mixed colors so the
- *        high half is distinguishable without blinking.
+ * @brief Map a slot to its display color. Slots 9-16 use mixed colors so the
+ *        high half is distinguishable without blinking. Returns a
+ *        chameleon_rgb_type_t value usable by the marquee animation.
  */
-static void set_slot_led_color_by_slot(uint8_t slot) {
+static uint8_t get_slot_display_color(uint8_t slot) {
     uint8_t base = get_color_by_slot(slot);
     if (slot >= 8) {
         switch (base) {
-            case 0: set_slot_light_color(RGB_YELLOW); break;   // dual -> yellow
-            case 1: set_slot_light_color(RGB_CYAN); break;     // IC    -> cyan
-            default: set_slot_light_color(RGB_MAGENTA); break; // ID    -> magenta
-        }
-    } else {
-        switch (base) {
-            case 0: set_slot_light_color(RGB_RED); break;      // dual -> red
-            case 1: set_slot_light_color(RGB_GREEN); break;    // IC   -> green
-            default: set_slot_light_color(RGB_BLUE); break;    // ID   -> blue
+            case 0: return RGB_YELLOW;   // dual -> yellow
+            case 1: return RGB_CYAN;     // IC    -> cyan
+            default: return RGB_MAGENTA; // ID    -> magenta
         }
     }
+    return base;
+}
+
+/**
+ * @brief Set the LED color for a slot (mixed color for the high half).
+ */
+static void set_slot_led_color_by_slot(uint8_t slot) {
+    set_slot_light_color((chameleon_rgb_type_t)get_slot_display_color(slot));
 }
 
 /**
@@ -117,8 +120,10 @@ void light_up_by_slot(void) {
  * @brief Apply visual and state changes after switching slot
  */
 void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
-    uint8_t color_now = get_color_by_slot(slot_now);
-    uint8_t color_new = get_color_by_slot(slot_new);
+    // Use display colors (mixed for the high half) so the animation itself
+    // already shows the right color for slots 9-16.
+    uint8_t color_now = get_slot_display_color(slot_now);
+    uint8_t color_new = get_slot_display_color(slot_new);
     rgb_marquee_slot_switch(slot_now, color_now, slot_new, color_new);
     // All slot-change paths (button, protocol command, polling) go through
     // here, so apply the high-half mixed color from this common point.

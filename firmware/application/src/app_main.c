@@ -933,6 +933,15 @@ static void run_button_function_by_settings(settings_button_function_t sbf) {
             }
             break;
 
+        case SettingsButtonEnterDfuMode:
+            NRF_LOG_INFO("Entering DFU mode by button press");
+            settings_save_config();
+            tag_emulation_save();
+            sd_power_gpregret_clr(0, 0xffffffff);
+            sd_power_gpregret_set(0, BOOTLOADER_DFU_START);
+            nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_DFU);
+            break;
+
         default:
             NRF_LOG_ERROR("Unsupported button function");
             break;
