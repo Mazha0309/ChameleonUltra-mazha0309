@@ -44,6 +44,8 @@ def lrc(data: bytes) -> int:
 def encode_frame(cmd: int, status: int, data: bytes = b"") -> bytes:
     if len(data) > 0xFFFF:
         raise ValueError("data too long")
+    if not (0 <= cmd <= 0xFFFF) or not (0 <= status <= 0xFFFF):
+        raise ValueError("cmd/status out of range")
     pre = (
         bytes([SOF, lrc(bytes([SOF]))])
         + cmd.to_bytes(2, "big")
@@ -54,7 +56,7 @@ def encode_frame(cmd: int, status: int, data: bytes = b"") -> bytes:
     return pre + data + bytes([lrc(data)])
 
 
-def parse_frame(buf: bytes):
+def parse_frame(buf: bytes) -> dict | None:
     """Parse one frame. Returns dict or None if incomplete. Raises ValueError on corrupt frame."""
     if len(buf) < TOTAL_OVERHEAD:
         return None
@@ -63,14 +65,15 @@ def parse_frame(buf: bytes):
     if buf[1] != lrc(bytes([SOF])):
         raise ValueError("bad sof lrc")
     data_len = int.from_bytes(buf[6:8], "big")
-    if len(buf) < TOTAL_OVERHEAD + data_len:
+    data_end = 9 + data_len
+    if len(buf) < data_end + 1:
         return None
     if buf[8] != lrc(buf[:8]):
         raise ValueError("bad head lrc")
-    if buf[-1] != lrc(buf[9:-1]):
+    if buf[data_end] != lrc(buf[9:data_end]):
         raise ValueError("bad data lrc")
     return {
         "cmd": int.from_bytes(buf[2:4], "big"),
         "status": int.from_bytes(buf[4:6], "big"),
-        "data": buf[9:-1],
+        "data": buf[9:data_end],
     }

@@ -59,3 +59,21 @@ def test_empty_data_frame():
     frame = encode_frame(CMD_ENTER_BOOTLOADER, STATUS_SUCCESS)
     assert len(frame) == 10
     assert frame[-1] == 0x00
+
+
+def test_parse_frame_with_trailing_bytes():
+    """buffer 中一帧完整 + 下一帧前缀时，必须解析出第一帧。"""
+    frame_a = encode_frame(CMD_GET_APP_VERSION, STATUS_SUCCESS, b"v2.0.0")
+    frame_b = encode_frame(CMD_ENTER_BOOTLOADER, STATUS_SUCCESS)  # 10 字节
+    assert parse_frame(frame_a + frame_b[:5]) == {
+        "cmd": CMD_GET_APP_VERSION,
+        "status": STATUS_SUCCESS,
+        "data": b"v2.0.0",
+    }
+
+
+def test_parse_frame_bad_sof_raises():
+    frame = bytearray(encode_frame(CMD_ENTER_BOOTLOADER, STATUS_SUCCESS))
+    frame[0] ^= 0xFF
+    with pytest.raises(ValueError):
+        parse_frame(bytes(frame))
