@@ -66,7 +66,6 @@ void settings_init_sleep_timeout_config(void) {
 static void settings_init_polling_config(void) {
     config.polling_enable = false;
     config.polling_interval_ms = POLLING_INTERVAL_DEFAULT_MS;
-    settings_init_ab_reboot_config();
 }
 
 static void settings_init_ab_reboot_config(void) {
@@ -82,6 +81,7 @@ void settings_init_config(void) {
     settings_init_ble_pairing_enable_config();
     settings_init_sleep_timeout_config();
     settings_init_polling_config();
+    settings_init_ab_reboot_config();
 }
 
 void settings_migrate(void) {
