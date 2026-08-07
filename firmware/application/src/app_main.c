@@ -15,6 +15,9 @@
 #include "nfc_mf1.h"         // for nfc_tag_mf1_prng_seed
 #include "nrf_power.h"
 #include "nrf_pwr_mgmt.h"
+#define BOOTLOADER_DFU_GPREGRET_MASK            (0xB0)
+#define BOOTLOADER_DFU_START_BIT_MASK           (0x01)
+#define BOOTLOADER_DFU_START    (BOOTLOADER_DFU_GPREGRET_MASK | BOOTLOADER_DFU_START_BIT_MASK)
 #include "nrfx_nfct.h"
 #include "nrfx_power.h"
 #include "nrf_drv_lpcomp.h"
