@@ -31,3 +31,6 @@ bool lf_tag_jablotron_data_factory(uint8_t slot, tag_specific_type_t tag_type);
 int lf_tag_idteck_data_savecb(tag_specific_type_t type, tag_data_buffer_t *buffer);
 bool lf_tag_idteck_data_factory(uint8_t slot, tag_specific_type_t tag_type);
 bool is_lf_field_exists(void);
+
+// True while the LF emulation detects a real reader field (antenna-off sampled).
+bool lf_reader_field_present(void);
