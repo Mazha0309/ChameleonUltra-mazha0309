@@ -99,6 +99,8 @@ void light_up_by_slot(void) {
  * @brief Apply visual and state changes after switching slot
  */
 void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
+    // Stop any running high-half blink first: it would fight the animation.
+    slot_led_blink_stop();
     uint8_t color_now = get_color_by_slot(slot_now);
     uint8_t color_new = get_color_by_slot(slot_new);
     rgb_marquee_slot_switch(slot_now, color_now, slot_new, color_new);

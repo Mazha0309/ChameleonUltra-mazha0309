@@ -16,6 +16,7 @@ NRF_LOG_MODULE_REGISTER();
 #include "rfid_main.h"
 #include "syssleep.h"
 #include "tag_emulation.h"
+#include "polling.h"
 
 
 #if NFC_TAG_14A_RX_PARITY_AUTO_DEL_ENABLE
@@ -361,6 +362,8 @@ void nfc_tag_14a_data_process(uint8_t *p_data) {
     if (m_sniff_cb != NULL) {
         m_sniff_cb(p_data, szDataBits);
     }
+    // Any frame from the reader means the reader field is present.
+    polling_note_reader_activity();
     // Manually draw frame, separate data and strange school inspection
 #if !NFC_TAG_14A_RX_PARITY_AUTO_DEL_ENABLE
     if (szDataBits >= 9) {

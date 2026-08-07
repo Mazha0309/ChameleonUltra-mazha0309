@@ -451,6 +451,9 @@ static void check_wakeup_src(void) {
     sd_power_gpregret_get(1, &m_gpregret_val);
     sd_power_gpregret_clr(1, GPREGRET_CLEAR_VALUE_DEFAULT);
 
+    // Any wake-up animation must not fight a running high-half blink.
+    slot_led_blink_stop();
+
 
     /*
      * Note: The hibernation described below is deep hibernation, stopping any non-wakeup source peripherals and stopping the CPU to achieve the lowest power consumption
