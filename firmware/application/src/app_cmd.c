@@ -14,6 +14,7 @@
 #include "settings.h"
 #include "delayed_reset.h"
 #include "netdata.h"
+#include "polling.h"
 #if defined(PROJECT_CHAMELEON_ULTRA)
 #include "bsp_wdt.h"
 #include "lf_reader_generic.h"
@@ -220,6 +221,47 @@ static data_frame_tx_t *cmd_processor_set_sleep_timeout(uint16_t cmd, uint16_t s
         return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
     }
     settings_set_sleep_timeout(data[0]);
+    return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
+}
+
+static data_frame_tx_t *cmd_processor_get_polling_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    uint8_t payload = settings_get_polling_enable() ? 1 : 0;
+    return data_frame_make(cmd, STATUS_SUCCESS, sizeof(payload), &payload);
+}
+
+static data_frame_tx_t *cmd_processor_set_polling_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    if (length != 1 || data[0] > 1) {
+        return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
+    }
+    settings_set_polling_enable(data[0] == 1);
+    settings_save_config();
+    if (data[0] == 1) {
+        polling_start();
+    } else {
+        polling_stop();
+    }
+    return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
+}
+
+static data_frame_tx_t *cmd_processor_get_polling_interval(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    uint8_t payload[2];
+    uint16_t interval = settings_get_polling_interval_ms();
+    payload[0] = (uint8_t)(interval >> 8);
+    payload[1] = (uint8_t)(interval & 0xFF);
+    return data_frame_make(cmd, STATUS_SUCCESS, sizeof(payload), payload);
+}
+
+static data_frame_tx_t *cmd_processor_set_polling_interval(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    if (length != 2) {
+        return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
+    }
+    uint16_t interval = ((uint16_t)data[0] << 8) | data[1];
+    if (interval < 100 || interval > 5000) {
+        return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
+    }
+    settings_set_polling_interval_ms(interval);
+    settings_save_config();
+    polling_start();   // restart with new interval
     return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
 }
 
@@ -3095,6 +3137,10 @@ static cmd_data_map_t m_data_cmd_map[] = {
     {    DATA_CMD_SET_BLE_PAIRING_ENABLE,       NULL,                        cmd_processor_set_ble_pairing_enable,        NULL                   },
     {    DATA_CMD_GET_SLEEP_TIMEOUT,            NULL,                        cmd_processor_get_sleep_timeout,             NULL                   },
     {    DATA_CMD_SET_SLEEP_TIMEOUT,            NULL,                        cmd_processor_set_sleep_timeout,             NULL                   },
+    {    DATA_CMD_GET_POLLING_ENABLE,           NULL,                        cmd_processor_get_polling_enable,            NULL                   },
+    {    DATA_CMD_SET_POLLING_ENABLE,           NULL,                        cmd_processor_set_polling_enable,            NULL                   },
+    {    DATA_CMD_GET_POLLING_INTERVAL,         NULL,                        cmd_processor_get_polling_interval,          NULL                   },
+    {    DATA_CMD_SET_POLLING_INTERVAL,         NULL,                        cmd_processor_set_polling_interval,          NULL                   },
     {    DATA_CMD_GET_ALL_SLOT_NICKS,           NULL,                        cmd_processor_get_all_slot_nicks,            NULL                   },
 
 #if defined(PROJECT_CHAMELEON_ULTRA)
