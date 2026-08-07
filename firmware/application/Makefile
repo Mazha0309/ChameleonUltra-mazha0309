@@ -15,6 +15,7 @@ SRC_FILES += \
   $(PROJ_DIR)/settings.c \
   $(PROJ_DIR)/usb_main.c \
   $(PROJ_DIR)/rgb_marquee.c \
+  $(PROJ_DIR)/slot_led.c \
   $(PROJ_DIR)/bsp/bsp_delay.c \
   $(PROJ_DIR)/bsp/bsp_time.c \
   $(PROJ_DIR)/bsp/bsp_wdt.c \

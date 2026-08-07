@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "rfid_main.h"
 #include "rgb_marquee.h"
+#include "slot_led.h"
 
 //The current mode of the device
 device_mode_t rfid_state = DEVICE_MODE_NONE;
@@ -86,6 +87,11 @@ void light_up_by_slot(void) {
         } else {
             nrf_gpio_pin_clear(led_pins[i]);
         }
+    }
+    if (slot >= 8) {
+        slot_led_blink_start(slot);
+    } else {
+        slot_led_blink_stop();
     }
 }
 

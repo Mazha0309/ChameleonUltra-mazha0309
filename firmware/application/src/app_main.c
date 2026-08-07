@@ -35,6 +35,7 @@ NRF_LOG_MODULE_REGISTER();
 #include "fds_util.h"
 #include "hex_utils.h"
 #include "rfid_main.h"
+#include "slot_led.h"
 #include "syssleep.h"
 #include "tag_emulation.h"
 #include "usb_main.h"
@@ -290,6 +291,7 @@ static void system_off_enter(void) {
     m_system_off_processing = true;
     // Save tag data
     tag_emulation_save();
+    slot_led_blink_stop();
 
     if (g_is_low_battery_shutdown) {
         // Don't create too complex animations, just blink LED1 three times.
@@ -1019,6 +1021,7 @@ int main(void) {
     button_init();            // Button initialization for handling business logic
     sleep_timer_init();       // Soft timer initialization for hibernation
     tag_emulation_init();     // Analog card initialization
+    slot_led_blink_init();    // Blink timer for high-half slots (9-16)
     rgb_marquee_init();       // Light effect initialization
 
     ble_passkey_init();       // init ble connect key.
