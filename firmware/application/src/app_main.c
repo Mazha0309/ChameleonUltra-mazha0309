@@ -262,6 +262,17 @@ static void timer_button_event_handle(void *arg) {
                 m_is_btn_long_press = is_long_press;
             }
         }
+
+        // A+B held together (>1s) triggers a soft reboot (configurable).
+        if (is_long_press && settings_get_ab_reboot_enable()) {
+            if ((pin == BUTTON_1 && m_is_a_btn_press) ||
+                (pin == BUTTON_2 && m_is_b_btn_press)) {
+                NRF_LOG_INFO("A+B long press: soft reboot");
+                settings_save_config();
+                tag_emulation_save();
+                nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_RESET);
+            }
+        }
     }
 }
 
