@@ -47,5 +47,7 @@ void polling_process(void) {
     uint8_t slot_new = tag_emulation_slot_find_next(slot_now);
     if (slot_new == slot_now) return;   // only one enabled slot
     tag_emulation_change_slot(slot_new, true);
-    apply_slot_change(slot_now, slot_new);
+    // Polling switches must not run the blocking marquee animation (it would
+    // eat the whole poll interval); update the slot LED instantly instead.
+    light_up_by_slot();
 }
