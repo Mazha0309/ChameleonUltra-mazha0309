@@ -53,21 +53,30 @@ Where do you find the community?
 
 ## Mazha0309 修改版（16 卡槽 + 轮询固件）
 
-基于官方 main 分支（v2.2.0）的修改版固件，**GPL-3.0 许可证，与官方保持一致**。版本号格式：`v2.2.0-mazha0309-XXX`（XXX 为构建序号）。
+基于官方 main 分支（v2.2.0）的修改版固件，**GPL-3.0 许可证，与官方保持一致**。
+版本号格式：`v2.2.0-mazha0309-XXX`（XXX 为构建序号）。
 
-### 功能修改
+### 功能列表
 
-- **16 卡槽**：槽位数 8 → 16（`TAG_MAX_SLOT_NUM`），老设备单次启动自动迁移（v8→v9），原 1~8 槽数据保留
-- **8 颗 LED 显示 16 槽**：槽位 → 灯位 `slot % 8`；1~8 槽显示标准色（红=双频/绿=IC/蓝=ID），**9~16 槽用混色**（黄/青/品红）区分，不闪烁
-- **场触发自动轮询**：无读头时静止不动；读头场出现按配置间隔自动在启用槽间切换；读头离开自动恢复原槽位
-  - 间隔 100~5000ms，修改立即生效（协议命令 `GET/SET_POLLING_ENABLE(1041/1042)`、`GET/SET_POLLING_INTERVAL(1043/1044)`）
-  - 配置持久化（settings v8）
-- **按键动作新增**：
-  - `轮询开关`（SettingsButtonTogglePolling = 6）：按一下开关自动轮询
-  - `进DFU`（SettingsButtonEnterDfuMode = 7）：保存数据后重启进 bootloader，方便插电脑刷机
-  - **A+B 同时长按 1 秒软重启**（松开触发，可经命令 `GET/SET_AB_REBOOT_ENABLE(1045/1046)` 关闭，默认开）
-- **协议修复**：`GET_SLOT_INFO`/`GET_ENABLED_SLOTS` 返回全部 16 槽（官方 8 槽硬编码）
-- **动画**：保持官方扫灯动画语义（含 `end=11` 边缘标记）；切槽动画使用目标槽显示色，避免旧槽颜色闪烁
+| 功能 | 说明 |
+|---|---|
+| **16 卡槽** | 槽位数 8 → 16；老设备固件升级单次启动自动迁移（槽配置 v8→v9），原 1~8 槽数据保留 |
+| **LED 混色高半区** | 8 颗物理 LED 显示 16 槽（`slot % 8`）；1~8 槽标准色（红=双频/绿=IC/蓝=ID），9~16 槽混色（黄/青/品红） |
+| **场触发自动轮询** | 无读头时静止；读头场出现按配置间隔自动在启用槽间切换；读头离开自动恢复原槽位；跳过空槽 |
+| **轮询间隔可配置** | 100~5000ms，修改立即生效（无需重启）；设置持久化（settings v8） |
+| **按键：轮询开关** | 按键动作新增"轮询开关"，按一下开/关自动轮询 |
+| **按键：进DFU** | 按键动作新增"进DFU"，保存数据后重启进 bootloader，插电脑直接刷机 |
+| **A+B 长按软重启** | 同时按住 A+B 超过 1 秒，松开触发软重启；可通过协议命令关闭（默认开） |
+| **协议修复** | `GET_SLOT_INFO`/`GET_ENABLED_SLOTS` 返回全部 16 槽（官方硬编码 8 槽导致 9~16 槽数据缺失） |
+| **动画优化** | 保持官方扫灯动画语义；切槽动画全程使用目标槽颜色，不闪旧色 |
+
+### 新增协议命令
+
+| 命令 | ID | 说明 |
+|---|---|---|
+| `GET/SET_POLLING_ENABLE` | 1041/1042 | 查询/设置轮询开关（1 字节 0/1） |
+| `GET/SET_POLLING_INTERVAL` | 1043/1044 | 查询/设置轮询间隔（uint16 大端，100~5000ms） |
+| `GET/SET_AB_REBOOT_ENABLE` | 1045/1046 | 查询/设置 A+B 软重启开关 |
 
 ### 编译
 
@@ -78,17 +87,38 @@ docker run --rm -v "$(pwd)/..:/workdir:rw" -e CURRENT_DEVICE_TYPE=ultra \
 # 产物：firmware/objects/ultra-dfu-app.zip（仅 application 的 DFU 包）
 ```
 
-版本号由 git 标签生成，打新构建号：`git tag -f v2.2.0-mazha0309-XXX HEAD`
+版本号由 git 标签生成，打新构建号：
+
+```bash
+git tag -f v2.2.0-mazha0309-XXX HEAD
+```
+
+无 Docker 时也可手动装 ARM 工具链（GNU ARM 12.2.rel1）+ nrfutil + mergehex 后直接 `./build.sh`。
 
 ### 刷机
 
-- 手机：MTools / ChameleonUltraGUI 本地 DFU 包刷入
-- 电脑：`./firmware/flash-dfu-app.sh`（需 nrfutil）
-- 恢复：随时可刷官方 v2.2.0 的 `ultra-dfu-app.zip`
+- **手机刷**：MTools / ChameleonUltraGUI → 固件管理 → 刷入本地 DFU 包
+- **电脑刷**：`./firmware/flash-dfu-app.sh`（需 nrfutil + pyserial，设备 USB 连接）
+  - 脚本自动进 DFU（`enter_dfu.py`），失败则按 B 键插入
+- **恢复**：随时刷官方 v2.2.0 的 `ultra-dfu-app.zip` 还原
 
 ### 配套工具（tools/cu-ble-sim/）
 
-Python 脚本，通过 USB 串口直接控制设备：
+Python 脚本，通过 USB 串口（VID 6868:8686）直接控制设备，无需 APP：
 
-- `set_active_slot.py <slot>` — 切到指定槽（0~15）
-- `polling_ctl.py on|off|interval <ms>|status` — 轮询控制
+```bash
+python set_active_slot.py <slot>        # 切到指定槽（0~15），高半区灯混色
+python polling_ctl.py on                # 开启轮询
+python polling_ctl.py off               # 关闭轮询
+python polling_ctl.py interval <ms>     # 设置间隔（100~5000）
+python polling_ctl.py status            # 查询状态
+```
+
+依赖：`pip install pyserial`；Linux 需 udev 规则或 dialout 组权限。
+
+### 测试建议
+
+1. 刷机后按键循环 16 槽：1~8 常亮标准色、9~16 混色
+2. 写入 2 张卡到不同槽，开轮询，贴读卡器观察自动切槽、离开恢复
+3. A+B 长按 1 秒松开验证软重启
+4. 设备设置中关掉轮询开关后，贴读卡器应完全静止
