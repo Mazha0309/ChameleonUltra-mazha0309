@@ -172,6 +172,7 @@ void rgb_marquee_usb_open_symmetric(uint8_t color) {
 //dir 0-from 1 card slot to 8 card slot, 1-from 8 card slot to 1 card slot (Direction, the end point is determined by the END parameter)
 //end To scan the number of lamps, decide the final animation area with the direction
 void rgb_marquee_sweep_to(uint8_t color, uint8_t dir, uint8_t end) {
+    end %= 8;   // 16 slots map onto 8 LEDs
     uint8_t startled = 0;
     uint8_t setled = 0;
     uint8_t leds2turnon = 0;
@@ -401,6 +402,8 @@ void rgb_marquee_sweep_fade(uint8_t color, uint8_t dir, uint8_t end, uint8_t sta
 //start Start the lamp position
 //stop Stop lamp position
 void rgb_marquee_sweep_from_to(uint8_t color, uint8_t start, uint8_t stop) {
+    start %= 8;   // 16 slots map onto 8 LEDs
+    stop %= 8;
     int8_t setled = start;
     uint32_t *led_pins = hw_get_led_array();
     //Set the brightness
@@ -541,6 +544,7 @@ void rgb_marquee_usb_idle(void) {
 }
 
 void rgb_marquee_symmetric_out(uint8_t color, uint8_t slot) {
+    slot %= 8;   // 16 slots map onto 8 LEDs
     uint32_t *led_pins = hw_get_led_array();
 
     //Adjust the color
@@ -601,6 +605,7 @@ void rgb_marquee_symmetric_out(uint8_t color, uint8_t slot) {
 }
 
 void rgb_marquee_symmetric_in(uint8_t color, uint8_t slot) {
+    slot %= 8;   // 16 slots map onto 8 LEDs
     uint32_t *led_pins = hw_get_led_array();
 
     //Adjust the color
