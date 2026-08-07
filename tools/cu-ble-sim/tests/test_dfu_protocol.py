@@ -12,6 +12,7 @@ from dfu_protocol import (
     OP_SET_PRN,
     OP_WRITE,
     RES_CRC_ERROR,
+    RES_INVALID_STATE,
     RES_NOT_SUPPORTED,
     RES_SUCCESS,
 )
@@ -101,7 +102,32 @@ def test_crc_mismatch():
         + (0xDEADBEEF).to_bytes(4, "little")
         + (10).to_bytes(4, "little")
     )
-    assert resp[2] == RES_CRC_ERROR
+    assert resp == (
+        bytes([OP_RESPONSE, OP_WRITE, RES_CRC_ERROR])
+        + (10).to_bytes(4, "little")
+        + (zlib.crc32(b"0123456789") & 0xFFFFFFFF).to_bytes(4, "little")
+    )
+
+
+def test_execute_without_create():
+    t = DfuTarget()
+    resp = t.handle_ctrl(bytes([OP_EXECUTE]))
+    assert resp == bytes([OP_RESPONSE, OP_EXECUTE, RES_INVALID_STATE])
+
+
+def test_execute_partial_object_rejected():
+    t = DfuTarget()
+    t.handle_ctrl(bytes([OP_OBJECT_CREATE, 0x01]) + (100).to_bytes(4, "little"))
+    t.handle_packet(b"x" * 50)  # 只写一半
+    resp = t.handle_ctrl(bytes([OP_EXECUTE]))
+    assert resp == bytes([OP_RESPONSE, OP_EXECUTE, RES_INVALID_STATE])
+
+
+def test_oversized_write_truncated():
+    t = DfuTarget()
+    t.handle_ctrl(bytes([OP_OBJECT_CREATE, 0x01]) + (10).to_bytes(4, "little"))
+    t.handle_packet(b"0123456789ABCDEF")  # 16 字节，声明 10
+    assert t.buffer == b"0123456789"
 
 
 def test_select_empty():

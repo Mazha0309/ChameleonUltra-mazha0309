@@ -68,6 +68,8 @@ class DfuTarget:
         if op == OP_WRITE:
             if len(payload) != 9:
                 return _resp(op, RES_INVALID_PARAMETER)
+            if self.object_type is None:
+                return _resp(op, RES_INVALID_STATE)
             expected_crc = int.from_bytes(payload[1:5], "little")
             expected_offset = int.from_bytes(payload[5:9], "little")
             actual_crc = zlib.crc32(self.buffer) & 0xFFFFFFFF
@@ -85,6 +87,10 @@ class DfuTarget:
                 + actual_crc.to_bytes(4, "little"),
             )
         if op == OP_EXECUTE:
+            if self.object_type is None:
+                return _resp(op, RES_INVALID_STATE)
+            if len(self.buffer) != self.object_size:
+                return _resp(op, RES_INVALID_STATE)
             if self.object_type == OBJ_INIT:
                 self.init_packet = self.buffer
                 self.buffer = b""
@@ -121,6 +127,8 @@ class DfuTarget:
                 op, RES_SUCCESS, (0).to_bytes(4, "little") + (0).to_bytes(4, "little")
             )
         if op == OP_GET_MTU:
+            if len(payload) != 1:
+                return _resp(op, RES_INVALID_PARAMETER)
             return _resp(op, RES_SUCCESS, self.mtu.to_bytes(2, "little"))
         return _resp(op, RES_NOT_SUPPORTED)
 
@@ -128,7 +136,9 @@ class DfuTarget:
         """Feed one BLE packet write. Returns a PRN receipt (bytes) or None."""
         if self.object_type is None or len(chunk) == 0:
             return None
-        self.buffer += chunk
+        room = self.object_size - len(self.buffer)
+        if room > 0:
+            self.buffer += chunk[:room]
         self.packets_since_receipt += 1
         if self.prn > 0 and self.packets_since_receipt >= self.prn:
             self.packets_since_receipt = 0
