@@ -34,6 +34,7 @@ NRF_LOG_MODULE_REGISTER();
 #include "dataframe.h"
 #include "fds_util.h"
 #include "hex_utils.h"
+#include "polling.h"
 #include "rfid_main.h"
 #include "slot_led.h"
 #include "syssleep.h"
@@ -292,6 +293,7 @@ static void system_off_enter(void) {
     // Save tag data
     tag_emulation_save();
     slot_led_blink_stop();
+    polling_stop();
 
     if (g_is_low_battery_shutdown) {
         // Don't create too complex animations, just blink LED1 three times.
@@ -485,6 +487,7 @@ static void check_wakeup_src(void) {
 
         // The indicator of the current card slot lights up at the end of the animation
         light_up_by_slot();
+        polling_start();
 
         // If no operation follows, wait for the timeout and then deep hibernate
         sleep_timer_start(SLEEP_DELAY_MS_BUTTON_WAKEUP);
@@ -518,6 +521,7 @@ static void check_wakeup_src(void) {
             set_slot_light_color(color);
         }
         light_up_by_slot();
+        polling_start();
 
         // We can only run tag emulation at field wakeup source.
         sleep_timer_start(SLEEP_DELAY_MS_FIELD_WAKEUP);
@@ -531,6 +535,7 @@ static void check_wakeup_src(void) {
 
         // Start Bluetooth radio with USB plugged in, no deep hibernation required
         advertising_start(false);
+        polling_start();
     } else {
         NRF_LOG_INFO("First power system");
 
@@ -561,6 +566,7 @@ static void check_wakeup_src(void) {
         // Show RGB for slot.
         set_slot_light_color(color);
         light_up_by_slot();
+        polling_start();
 
         // If the USB is plugged in when first powered up, we can do something accordingly
         if (nrfx_power_usbstatus_get() != NRFX_POWER_USB_STATE_DISCONNECTED) {
@@ -595,6 +601,8 @@ static void cycle_slot(bool dec) {
     }
     // Go back to the color corresponding to the field enablement type
     apply_slot_change(slot_now, slot_new);
+    // Manual slot switch resets the polling cycle
+    polling_start();
 }
 
 static void show_battery(void) {
@@ -1022,6 +1030,7 @@ int main(void) {
     sleep_timer_init();       // Soft timer initialization for hibernation
     tag_emulation_init();     // Analog card initialization
     slot_led_blink_init();    // Blink timer for high-half slots (9-16)
+    polling_init();           // Fixed-delay slot polling timer
     rgb_marquee_init();       // Light effect initialization
 
     ble_passkey_init();       // init ble connect key.
@@ -1043,6 +1052,8 @@ int main(void) {
         lesc_event_process();
         // Button event process
         button_press_process();
+        // Fixed-delay slot polling process
+        polling_process();
 
 #if defined(PROJECT_CHAMELEON_ULTRA)
         // Field generator rainbow animation
