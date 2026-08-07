@@ -20,14 +20,14 @@
 
 /*
  * Each card slot has two types of data, high and low frequency
- * FDS file ID follows the card slot, starting from 0x1100 to 0x1107
+ * FDS file ID follows the card slot, starting from 0x1100 to 0x110F
  * FDS record key mirrors TAG_SENSE_LF/HF so is 1 for LF, 2 for HF (currently)
  */
 #define FDS_SLOT_TAG_DUMP_FILE_ID_BASE      0x1100
 
 /*
  * Each card slot has two types of data, high and low frequency, so it can get two names
- * FDS file ID follows the card slot, starting from 0x1200 to 0x1207
+ * FDS file ID follows the card slot, starting from 0x1200 to 0x120F
  * FDS record key mirrors TAG_SENSE_LF/HF so is 1 for LF, 2 for HF (currently)
  */
 #define FDS_SLOT_TAG_NICK_NAME_FILE_ID_BASE 0x1200
