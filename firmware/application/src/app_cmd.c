@@ -1099,10 +1099,10 @@ static data_frame_tx_t *cmd_processor_get_slot_info(uint16_t cmd, uint16_t statu
     struct {
         uint16_t hf_tag_type;
         uint16_t lf_tag_type;
-    } PACKED payload[8];
+    } PACKED payload[TAG_MAX_SLOT_NUM];
 
     tag_slot_specific_type_t tag_types;
-    for (uint8_t slot = 0; slot < 8; slot++) {
+    for (uint8_t slot = 0; slot < TAG_MAX_SLOT_NUM; slot++) {
         tag_emulation_get_specific_types_by_slot(slot, &tag_types);
         payload[slot].hf_tag_type = U16HTONS(tag_types.tag_hf);
         payload[slot].lf_tag_type = U16HTONS(tag_types.tag_lf);
@@ -1901,8 +1901,8 @@ static data_frame_tx_t *cmd_processor_get_enabled_slots(uint16_t cmd, uint16_t s
     struct {
         uint8_t enabled_hf;
         uint8_t enabled_lf;
-    } PACKED payload[8];
-    for (uint8_t slot = 0; slot < 8; slot++) {
+    } PACKED payload[TAG_MAX_SLOT_NUM];
+    for (uint8_t slot = 0; slot < TAG_MAX_SLOT_NUM; slot++) {
         payload[slot].enabled_hf = is_slot_enabled(slot, TAG_SENSE_HF);
         payload[slot].enabled_lf = is_slot_enabled(slot, TAG_SENSE_LF);
     }
