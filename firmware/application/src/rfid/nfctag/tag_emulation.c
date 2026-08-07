@@ -493,15 +493,15 @@ static void tag_emulation_migrate_slot_config(void) {
              * through to the next case.
              */
 
-            tag_emulation_save_config();
-        case TAG_SLOT_CONFIG_CURRENT_VERSION:
-            break;
         case 8:
-            // v8 -> v9: expand to 16 slots, clear the new slots
+            // v8 -> v9: expand to 16 slots, clear the new slots.
+            // NOTE: if the slot count is expanded again in the future, adjust the 8 here.
             memset(&slotConfig.slots[8], 0, 8 * sizeof(slotConfig.slots[0]));
             NRF_LOG_INFO("Migrating slotConfig v8 to v9...");
             slotConfig.version = 9;
             tag_emulation_save_config();
+            break;
+        case TAG_SLOT_CONFIG_CURRENT_VERSION:
             break;
         default:
             NRF_LOG_ERROR("Unsupported slotConfig migration attempted! (%d -> %d)", slotConfig.version, TAG_SLOT_CONFIG_CURRENT_VERSION);
