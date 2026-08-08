@@ -78,16 +78,17 @@ void polling_process(void) {
         uint8_t slot_new = tag_emulation_slot_find_next(slot_now);
         if (slot_new == slot_now) return;   // only one enabled slot
         tag_emulation_change_slot(slot_new, true);
-        // Quick fade animation: visible feedback without blocking the main
-        // loop for the full 400ms (polling cadence stays close to interval).
-        apply_slot_change_quick(slot_now, slot_new);
+        // Same visual feedback as manual slot switching: run the sweep
+        // animation. Polling is field-triggered, so animations only play
+        // while a reader is actually present.
+        apply_slot_change(slot_now, slot_new);
     } else {
         m_polling_pending = false;
         if (m_polling_active) {
             // Reader left: stop cycling and restore the original slot.
             uint8_t slot_now = tag_emulation_get_slot();
             tag_emulation_change_slot(m_original_slot, true);
-            apply_slot_change_quick(slot_now, m_original_slot);
+            apply_slot_change(slot_now, m_original_slot);
             m_polling_active = false;
         }
     }

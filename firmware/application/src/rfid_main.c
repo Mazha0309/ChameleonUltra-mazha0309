@@ -123,28 +123,16 @@ void light_up_by_slot(void) {
 /**
  * @brief Apply visual and state changes after switching slot
  */
-static void apply_slot_change_ex(uint8_t slot_now, uint8_t slot_new, uint8_t step) {
-    uint8_t color_old = get_slot_display_color(slot_now);
+void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
+    // Use display colors (mixed for the high half) so the animation itself
+    // already shows the right color for slots 9-16. The fade-down phase also
+    // uses the target color: switching between differently-colored slots must
+    // not flash the old slot's color.
     uint8_t color_new = get_slot_display_color(slot_new);
-    // Fade the old LED down in a neutral white when the two slots have
-    // different display colors: showing the next slot's color on the old
-    // position (e.g. low-half green fading out as high-half cyan) is
-    // confusing. Same-color switches fade down in that color.
-    uint8_t fade_color = (color_old == color_new) ? color_new : RGB_WHITE;
-    rgb_marquee_slot_switch_ex(slot_now, fade_color, slot_new, color_new, step);
+    rgb_marquee_slot_switch(slot_now, color_new, slot_new, color_new);
     // All slot-change paths (button, protocol command, polling) go through
     // here, so apply the high-half mixed color from this common point.
     set_slot_led_color_by_slot(slot_new);
-}
-
-void apply_slot_change(uint8_t slot_now, uint8_t slot_new) {
-    apply_slot_change_ex(slot_now, slot_new, 1);
-}
-
-// Polling variant: quick fade (step 4) so the switch takes ~100ms instead of
-// blocking the main loop for ~400ms.
-void apply_slot_change_quick(uint8_t slot_now, uint8_t slot_new) {
-    apply_slot_change_ex(slot_now, slot_new, 4);
 }
 
 /**
