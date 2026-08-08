@@ -16,6 +16,8 @@
 #include "lf_reader_main.h"
 #include "mf1_toolbox.h"
 #include "rc522.h"
+void apply_slot_change_quick(uint8_t slot_now, uint8_t slot_new);
+
 #endif
 
 typedef enum {
@@ -32,5 +34,7 @@ void reader_mode_enter(void);
 void tag_mode_enter(void);
 device_mode_t get_device_mode(void);
 uint8_t get_color_by_slot(uint8_t slot);
+
+void apply_slot_change_quick(uint8_t slot_now, uint8_t slot_new);
 
 #endif

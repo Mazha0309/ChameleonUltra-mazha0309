@@ -20,3 +20,4 @@ void rgb_marquee_symmetric_out(uint8_t color, uint8_t slot);
 void rgb_marquee_symmetric_in(uint8_t color, uint8_t slot);
 
 #endif
+void rgb_marquee_slot_switch_ex(uint8_t led_down, uint8_t color_led_down, uint8_t led_up, uint8_t color_led_up, uint8_t step);

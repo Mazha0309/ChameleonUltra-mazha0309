@@ -263,9 +263,10 @@ static void rgb_marquee_slot_switch_pwm_callback(nrfx_pwm_evt_type_t event_type)
         callback_waiting = 1;
     }
 }
-void rgb_marquee_slot_switch(uint8_t led_down, uint8_t color_led_down, uint8_t led_up, uint8_t color_led_up) {
+void rgb_marquee_slot_switch_ex(uint8_t led_down, uint8_t color_led_down, uint8_t led_up, uint8_t color_led_up, uint8_t step) {
     led_down %= 8;   // 16 slots map onto 8 LEDs
     led_up %= 8;
+    if (step == 0) step = 1;
     int16_t light_level = 99; //ledBrightnessValue
     uint32_t *led_pins = hw_get_led_array();
     if (led_down >= 0 && led_down <= 7) {
@@ -292,7 +293,7 @@ void rgb_marquee_slot_switch(uint8_t led_down, uint8_t color_led_down, uint8_t l
             while (callback_waiting == 0); //Waiting for the output of the PWM module to complete
             bsp_delay_us(1234);
             callback_waiting = 0;
-            light_level --;
+            light_level -= step;
         }
     }
     for (uint8_t i = 0; i < RGB_LIST_NUM; i++) {
@@ -323,9 +324,13 @@ void rgb_marquee_slot_switch(uint8_t led_down, uint8_t color_led_down, uint8_t l
             while (callback_waiting == 0); //Waiting for the output of the PWM module to complete
             bsp_delay_us(1234);
             callback_waiting = 0;
-            light_level ++;
+            light_level += step;
         }
     }
+}
+
+void rgb_marquee_slot_switch(uint8_t led_down, uint8_t color_led_down, uint8_t led_up, uint8_t color_led_up) {
+    rgb_marquee_slot_switch_ex(led_down, color_led_down, led_up, color_led_up, 1);
 }
 
 // 4 Light Tail horizontal movement cycle (not returning), does not include the disappearance of the tail, but includes the head of the head (for the type of playback type animation)
