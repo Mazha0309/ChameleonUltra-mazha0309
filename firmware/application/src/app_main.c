@@ -941,10 +941,25 @@ static void run_button_function_by_settings(settings_button_function_t sbf) {
             if (settings_get_polling_enable()) {
                 NRF_LOG_INFO("Polling enabled by button press");
                 polling_start();
+                // Feedback: all LEDs flash green
+                set_slot_light_color(RGB_GREEN);
+                uint32_t *led_pins = hw_get_led_array();
+                for (uint8_t i = 0; i < RGB_LIST_NUM; i++) {
+                    nrf_gpio_pin_set(led_pins[i]);
+                }
+                bsp_delay_ms(300);
             } else {
                 NRF_LOG_INFO("Polling disabled by button press");
                 polling_stop();
+                // Feedback: all LEDs flash red
+                set_slot_light_color(RGB_RED);
+                uint32_t *led_pins = hw_get_led_array();
+                for (uint8_t i = 0; i < RGB_LIST_NUM; i++) {
+                    nrf_gpio_pin_set(led_pins[i]);
+                }
+                bsp_delay_ms(300);
             }
+            light_up_by_slot();
             break;
 
         case SettingsButtonEnterDfuMode:
