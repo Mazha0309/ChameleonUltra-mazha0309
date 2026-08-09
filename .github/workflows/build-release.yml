@@ -20,6 +20,18 @@ jobs:
         run: |
           ls -la firmware/objects/ultra-dfu-app.zip
           unzip -l firmware/objects/ultra-dfu-app.zip
+      - name: Commit package to repo (jsDelivr CDN channel)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          mkdir -p releases
+          cp firmware/objects/ultra-dfu-app.zip releases/ultra-dfu-app.zip
+          echo "${GITHUB_REF_NAME}" > releases/version.txt
+          git add releases/
+          git commit -m "chore: update firmware package (${GITHUB_REF_NAME})" || echo "nothing to commit"
+          git push origin main
       - name: Upload DFU package to Release
         uses: softprops/action-gh-release@v2
         with:
