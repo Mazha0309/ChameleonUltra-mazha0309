@@ -123,7 +123,6 @@ static tag_base_handler_map_t tag_base_map[] = {
 };
 
 static void tag_emulation_load_config(void);
-static void tag_emulation_save_config(void);
 
 /**
  * get the data loader for the specific type of tag
@@ -531,7 +530,7 @@ static void tag_emulation_load_config(void) {
 /**
  * Save the emulated card configuration data
  */
-static void tag_emulation_save_config(void) {
+uint8_t tag_emulation_save_config(void) {
     // We are configured the card slot configuration, and we need to calculate the current card slot configuration CRC code to judge whether the data below is updated
     uint16_t new_calc_crc;
     calc_14a_crc_lut((uint8_t *)&slotConfig, sizeof(slotConfig), (uint8_t *)&new_calc_crc);
@@ -547,6 +546,7 @@ static void tag_emulation_save_config(void) {
     } else {
         NRF_LOG_INFO("Tag slot config no change.");
     }
+    return STATUS_SUCCESS;
 }
 
 /**
@@ -622,6 +622,12 @@ bool tag_emulation_slot_polling_skip(uint8_t slot) {
         return true;
     }
     return slotConfig.slots[slot].polling_skip;
+}
+
+void tag_emulation_slot_set_polling_skip(uint8_t slot, bool skip) {
+    if (slot < TAG_MAX_SLOT_NUM) {
+        slotConfig.slots[slot].polling_skip = skip;
+    }
 }
 
 bool is_slot_enabled(uint8_t slot, tag_sense_type_t sense_type) {

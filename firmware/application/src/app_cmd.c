@@ -289,7 +289,7 @@ static data_frame_tx_t *cmd_processor_set_slot_polling_skip(uint16_t cmd, uint16
     }
     uint16_t mask = ((uint16_t)data[0] << 8) | data[1];
     for (uint8_t slot = 0; slot < TAG_MAX_SLOT_NUM; slot++) {
-        slotConfig.slots[slot].polling_skip = (mask >> slot) & 1;
+        tag_emulation_slot_set_polling_skip(slot, ((mask >> slot) & 1) != 0);
     }
     tag_emulation_save_config();
     return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);

@@ -120,5 +120,8 @@ uint8_t tag_emulation_slot_find_prev(uint8_t slot_now);
 bool is_tag_specific_type_valid(tag_specific_type_t tag_type);
 
 bool tag_emulation_slot_polling_skip(uint8_t slot);
+void tag_emulation_slot_set_polling_skip(uint8_t slot, bool skip);
+
+uint8_t tag_emulation_save_config(void);
 
 #endif
