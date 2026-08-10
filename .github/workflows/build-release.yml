@@ -29,7 +29,7 @@ jobs:
           mkdir -p releases
           cp firmware/objects/ultra-dfu-app.zip releases/ultra-dfu-app.zip
           echo "${GITHUB_REF_NAME}" > releases/version.txt
-          git add releases/
+          git add -f releases/
           git commit -m "chore: update firmware package (${GITHUB_REF_NAME})" || echo "nothing to commit"
           git push origin main
       - name: Upload DFU package to Release
