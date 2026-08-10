@@ -53,6 +53,21 @@ void polling_note_reader_activity(void) {
     m_last_reader_activity = app_timer_cnt_get();
 }
 
+// Next enabled slot that participates in polling (skips polling_skip slots).
+static uint8_t polling_find_next(uint8_t slot_now) {
+    uint8_t candidate = slot_now;
+    for (uint8_t i = 0; i < TAG_MAX_SLOT_NUM; i++) {
+        candidate = tag_emulation_slot_find_next(candidate);
+        if (candidate == slot_now) {
+            break;  // no other enabled slot
+        }
+        if (!tag_emulation_slot_polling_skip(candidate)) {
+            return candidate;
+        }
+    }
+    return slot_now;
+}
+
 static bool polling_reader_present(void) {
     // LF: use the emulation's own reader-presence state (sampled with the
     // antenna off + drain) instead of sampling LPCOMP here — the device's own
@@ -75,7 +90,7 @@ void polling_process(void) {
         if (!m_polling_pending) return;
         m_polling_pending = false;
         uint8_t slot_now = tag_emulation_get_slot();
-        uint8_t slot_new = tag_emulation_slot_find_next(slot_now);
+        uint8_t slot_new = polling_find_next(slot_now);
         if (slot_new == slot_now) return;   // only one enabled slot
         tag_emulation_change_slot(slot_new, true);
         // Same visual feedback as manual slot switching: run the sweep

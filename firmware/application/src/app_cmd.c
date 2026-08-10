@@ -270,6 +270,31 @@ static data_frame_tx_t *cmd_processor_get_ab_reboot_enable(uint16_t cmd, uint16_
     return data_frame_make(cmd, STATUS_SUCCESS, sizeof(payload), &payload);
 }
 
+static data_frame_tx_t *cmd_processor_get_slot_polling_skip(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    uint8_t payload[2];
+    uint16_t mask = 0;
+    for (uint8_t slot = 0; slot < TAG_MAX_SLOT_NUM; slot++) {
+        if (tag_emulation_slot_polling_skip(slot)) {
+            mask |= (1 << slot);
+        }
+    }
+    payload[0] = (uint8_t)(mask >> 8);
+    payload[1] = (uint8_t)(mask & 0xFF);
+    return data_frame_make(cmd, STATUS_SUCCESS, sizeof(payload), payload);
+}
+
+static data_frame_tx_t *cmd_processor_set_slot_polling_skip(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
+    if (length != 2) {
+        return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
+    }
+    uint16_t mask = ((uint16_t)data[0] << 8) | data[1];
+    for (uint8_t slot = 0; slot < TAG_MAX_SLOT_NUM; slot++) {
+        slotConfig.slots[slot].polling_skip = (mask >> slot) & 1;
+    }
+    tag_emulation_save_config();
+    return data_frame_make(cmd, STATUS_SUCCESS, 0, NULL);
+}
+
 static data_frame_tx_t *cmd_processor_set_ab_reboot_enable(uint16_t cmd, uint16_t status, uint16_t length, uint8_t *data) {
     if (length != 1 || data[0] > 1) {
         return data_frame_make(cmd, STATUS_PAR_ERR, 0, NULL);
@@ -3157,6 +3182,8 @@ static cmd_data_map_t m_data_cmd_map[] = {
     {    DATA_CMD_SET_POLLING_INTERVAL,         NULL,                        cmd_processor_set_polling_interval,          NULL                   },
     {    DATA_CMD_GET_AB_REBOOT_ENABLE,         NULL,                        cmd_processor_get_ab_reboot_enable,          NULL                   },
     {    DATA_CMD_SET_AB_REBOOT_ENABLE,         NULL,                        cmd_processor_set_ab_reboot_enable,          NULL                   },
+    {    DATA_CMD_GET_SLOT_POLLING_SKIP,        NULL,                        cmd_processor_get_slot_polling_skip,         NULL                   },
+    {    DATA_CMD_SET_SLOT_POLLING_SKIP,        NULL,                        cmd_processor_set_slot_polling_skip,         NULL                   },
     {    DATA_CMD_GET_ALL_SLOT_NICKS,           NULL,                        cmd_processor_get_all_slot_nicks,            NULL                   },
 
 #if defined(PROJECT_CHAMELEON_ULTRA)

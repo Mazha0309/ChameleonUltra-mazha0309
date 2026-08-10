@@ -617,6 +617,13 @@ void tag_emulation_change_slot(uint8_t index, bool sense_disable) {
 /**
  * Determine whether the specified card slot is enabled
  */
+bool tag_emulation_slot_polling_skip(uint8_t slot) {
+    if (slot >= TAG_MAX_SLOT_NUM) {
+        return true;
+    }
+    return slotConfig.slots[slot].polling_skip;
+}
+
 bool is_slot_enabled(uint8_t slot, tag_sense_type_t sense_type) {
     if (sense_type == TAG_SENSE_LF) {
         return slotConfig.slots[slot].enabled_lf;

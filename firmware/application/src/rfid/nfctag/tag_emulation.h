@@ -56,9 +56,10 @@ typedef struct {
     uint32_t : 0;         // U32 align
     struct {              // 4-byte slot config + 2*2-byte tag_specific_types
         // Individual slot configuration
-        uint32_t enabled_hf : 1;  // Whether to enable the HF card
-        uint32_t enabled_lf : 1;  // Whether to enable the LF card
-        uint32_t : 0;             // U32 align
+        uint32_t enabled_hf : 1;    // Whether to enable the HF card
+        uint32_t enabled_lf : 1;    // Whether to enable the LF card
+        uint32_t polling_skip : 1;  // v10: skip this slot in auto polling
+        uint32_t : 0;               // U32 align
         // Specific type of emulated card
         union {
             uint16_t U16_tag_hf;
@@ -117,5 +118,7 @@ void tag_emulation_factory_init(void);
 uint8_t tag_emulation_slot_find_next(uint8_t slot_now);
 uint8_t tag_emulation_slot_find_prev(uint8_t slot_now);
 bool is_tag_specific_type_valid(tag_specific_type_t tag_type);
+
+bool tag_emulation_slot_polling_skip(uint8_t slot);
 
 #endif
